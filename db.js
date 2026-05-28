@@ -34,6 +34,17 @@ function initDb() {
         UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = OLD.id;
       END
   `)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS user_devices (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id     INTEGER NOT NULL,
+      device_id   TEXT NOT NULL,
+      device_name TEXT NOT NULL DEFAULT '',
+      created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id),
+      UNIQUE(user_id, device_id)
+    )
+  `)
 }
 
 function createUser(username, email, passwordHash) {
@@ -54,4 +65,35 @@ function findUserByEmail(email) {
   return stmt.get(email)
 }
 
-module.exports = { getDb, createUser, findUserByUsername, findUserByEmail }
+function findUserById(id) {
+  const stmt = getDb().prepare('SELECT * FROM users WHERE id = ?')
+  return stmt.get(id)
+}
+
+function updatePassword(id, passwordHash) {
+  const stmt = getDb().prepare('UPDATE users SET password_hash = ? WHERE id = ?')
+  stmt.run(passwordHash, id)
+}
+
+function findDevicesByUserId(userId) {
+  const stmt = getDb().prepare('SELECT * FROM user_devices WHERE user_id = ? ORDER BY created_at ASC')
+  return stmt.all(userId)
+}
+
+function findDeviceByUserIdAndDeviceId(userId, deviceId) {
+  const stmt = getDb().prepare('SELECT * FROM user_devices WHERE user_id = ? AND device_id = ?')
+  return stmt.get(userId, deviceId)
+}
+
+function addDevice(userId, deviceId, deviceName) {
+  const stmt = getDb().prepare('INSERT INTO user_devices (user_id, device_id, device_name) VALUES (?, ?, ?)')
+  const result = stmt.run(userId, deviceId, deviceName)
+  return result.lastInsertRowid
+}
+
+function removeDevice(id, userId) {
+  const stmt = getDb().prepare('DELETE FROM user_devices WHERE id = ? AND user_id = ?')
+  stmt.run(id, userId)
+}
+
+module.exports = { getDb, createUser, findUserByUsername, findUserByEmail, findUserById, updatePassword, findDevicesByUserId, findDeviceByUserIdAndDeviceId, addDevice, removeDevice }

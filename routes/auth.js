@@ -1,7 +1,7 @@
 const express = require('express')
 const bcrypt = require('bcryptjs')
-const { createUser, findUserByUsername, findUserByEmail } = require('../db')
-const { generateToken } = require('../middleware/auth')
+const { createUser, findUserByUsername, findUserByEmail, findUserById, updatePassword } = require('../db')
+const { generateToken, authMiddleware } = require('../middleware/auth')
 
 const router = express.Router()
 const SALT_ROUNDS = 10
@@ -64,7 +64,7 @@ router.post('/login', (req, res) => {
   }
 
   const token = generateToken(user.id)
-  res.json({ success: true, token, message: '登录成功' })
+  res.json({ success: true, token, user: { id: user.id, username: user.username, email: user.email }, message: '登录成功' })
 })
 
 // GET /api/auth/check-username?username=xxx
@@ -75,6 +75,32 @@ router.get('/check-username', (req, res) => {
   }
   const user = findUserByUsername(username)
   res.json({ available: !user })
+})
+
+// PUT /api/auth/change-password
+router.put('/change-password', authMiddleware, (req, res) => {
+  const { oldPassword, newPassword } = req.body
+
+  if (!oldPassword || !newPassword) {
+    return res.status(400).json({ success: false, message: '请填写旧密码和新密码' })
+  }
+  if (newPassword.length < 6 || newPassword.length > 20) {
+    return res.status(400).json({ success: false, message: '新密码长度需在6-20个字符之间' })
+  }
+
+  const user = findUserById(req.userId)
+  if (!user) {
+    return res.status(404).json({ success: false, message: '用户不存在' })
+  }
+
+  const valid = bcrypt.compareSync(oldPassword, user.password_hash)
+  if (!valid) {
+    return res.status(403).json({ success: false, message: '旧密码错误' })
+  }
+
+  const passwordHash = bcrypt.hashSync(newPassword, SALT_ROUNDS)
+  updatePassword(user.id, passwordHash)
+  res.json({ success: true, message: '密码修改成功' })
 })
 
 module.exports = router
