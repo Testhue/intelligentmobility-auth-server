@@ -1,5 +1,6 @@
 const Database = require('better-sqlite3')
 const path = require('path')
+const fs = require('fs')
 
 const DB_PATH = path.join(__dirname, 'data.db')
 
@@ -45,6 +46,27 @@ function initDb() {
       UNIQUE(user_id, device_id)
     )
   `)
+  seedUsers()
+}
+
+function seedUsers() {
+  const seedPath = path.join(__dirname, 'seed-users.json')
+  if (!fs.existsSync(seedPath)) return
+
+  const count = db.prepare('SELECT COUNT(*) as count FROM users').get()
+  if (count.count > 0) return
+
+  const users = JSON.parse(fs.readFileSync(seedPath, 'utf-8'))
+  const insert = db.prepare(
+    'INSERT OR IGNORE INTO users (username, email, password_hash) VALUES (?, ?, ?)'
+  )
+  const tx = db.transaction(() => {
+    for (const u of users) {
+      insert.run(u.username, u.email, u.password_hash)
+    }
+  })
+  tx()
+  console.log(`[seed] Inserted ${users.length} users from seed-users.json`)
 }
 
 function createUser(username, email, passwordHash) {

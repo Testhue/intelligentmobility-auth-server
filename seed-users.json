@@ -1,0 +1,8 @@
+[
+  {"username":"testuser","email":"test@test.com","password_hash":"$2a$10$yqQX1csCtkk7aecwJOjLTO7gYsq15JqO/2wVOHk0uYBf21f77W12W"},
+  {"username":"Aurora","email":"1055589576@test.com","password_hash":"$2a$10$mPxMnbh3QI0fRm/OieK6oO9zpogwcJe7ternMG6/keBxKJ2SfVcf6"},
+  {"username":"aaa","email":"aaa@test.com","password_hash":"$2a$10$/uNxEi.dIN/LR.Zkiq9hRO9fKuaJxxzokKlJgX8hlOHl3CIsbFQy2"},
+  {"username":"test1","email":"test1@test.com","password_hash":"$2a$10$kNwoxTnQY2hRYuedUpyRm.YgmoYGmPBq19/rtGZJUzIM.Dve563Ba"},
+  {"username":"test2","email":"qwe@qq.com","password_hash":"$2a$10$4wXHGhyorr9fqhMVvt359O845.KGt0Nw0brQGHjW/BRsqwtHLyX0K"},
+  {"username":"ljb123","email":"1111@qq.com","password_hash":"$2a$10$JhlIKi9yE3mi/4isCFfHX.JTHeUgDM4M.fgD26oWvjjNmFwYuoCva"}
+]
